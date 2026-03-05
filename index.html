@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRCode</title>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+</head>
+<body>
+    <div id="qrcode"></div>
+    <input id="new-token" placeholder="Reference token">
+    <button id="start-session">Start Session</button>
+    <script>
+        let id = 'f07e70ae-a854-4281-a324-a804474ab397';
+        const qrcodeElement = document.getElementById("qrcode");
+        const qrCodeObj = new QRCode(qrcodeElement, {width: 256, height: 256});
+        setInterval(() => {
+            let token = `${id}:${Date.now()}:${Math.random().toString(36).substring(7)}`;
+            qrCodeObj.makeCode(token);
+        }, 5000);
+        document.querySelector('#start-session').addEventListener('click', () => {
+            id = document.querySelector('#new-token').value.split(':')[0];
+            document.querySelector('#new-token').value = '';
+        }); 
+    </script>
+</body>
+</html>
