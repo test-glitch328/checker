@@ -20,13 +20,13 @@
         let id = ids[currentDate.toLocaleString('en-IN', {weekday: 'long', timeZone: 'Asia/Kolkata'})];
         const qrcodeElement = document.getElementById("qrcode");
         const qrCodeObj = new QRCode(qrcodeElement, {width: 256, height: 256});
-        setInterval(() => {
-            let token = `${id}:${Date.now()}:${Math.random().toString(36).substring(7)}`;
-            if (id)
-                qrCodeObj.makeCode(token);
-        }, 5000);
+        qrCodeObj.makeCode(`${id}:hello:hello`);
         document.querySelector('#start-session').addEventListener('click', () => {
             id = document.querySelector('#new-token').value.split(':')[0];
+            setInterval(() => {
+                let token = `${id}:${Date.now()}:${Math.random().toString(36).substring(7)}`;
+                qrCodeObj.makeCode(token);
+            }, 5000);
             document.querySelector('#new-token').value = '';
         });
     </script>
