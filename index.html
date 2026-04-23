@@ -5,59 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QRCode</title>
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool@latest'></script>
 </head>
 <body>
     <div id="qrcode"></div>
     <input id="new-token" placeholder="Reference token">
-    <div style="font-size: 25px" id="count"></div>
     <button id="start-session">Start Session</button>
     <div>These QRs only work when teacher is running an active QR session so don't scan them when an active session is not there or outside of class timings</div>
     <br>
     <div>*Use these QRs at your own risk*</div>
     <script>
-        const SUPABASE_URL ='https://zlkleprvhjgjcjycezpu.supabase.co';
-        const SUPABASE_ANON_KEY ='sb_publishable__N4Adhnf5rbV_tHVK8rB0w_8PW_KAs1';
-        const { createClient } = supabase;
-        const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let attendanceChannel = null;
-        async function setupAttendanceCounter(lectureId) {        
-            const todayStr = new Date().toISOString().split('T')[0];
-            const refreshCount = async () => {
-                const { count, error } = await db
-                    .from('attendance')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('schedule_id', lectureId)
-                    .eq('date', todayStr)
-                    .eq('status', 'present');
-                if (!error) {
-                    document.querySelector("#count").textContent = count || 0;
-                } 
-            };
-            refreshCount();
-            attendanceChannel = db.channel('qr_counter')
-                .on('postgres_changes', { 
-                    event: '*', 
-                    schema: 'public', 
-                    table: 'attendance',
-                    filter: `schedule_id=eq.${lectureId}`
-                }, () => {
-                    refreshCount();
-                })
-                .subscribe();
-        }
         const ids = {'Monday': '452068d6-aa86-4ddf-bcea-54cbe4148f66', 'Wednesday': '80776eaa-d0e8-4807-a7a3-dc19f99fd5a3', 'Thursday': 'f22ca3b9-2da7-4380-9044-f60d2345c87e', 'Friday': 'f07e70ae-a854-4281-a324-a804474ab397'};
         const currentDate = new Date();
         let id = ids[currentDate.toLocaleString('en-IN', {weekday: 'long', timeZone: 'Asia/Kolkata'})];
         const qrcodeElement = document.getElementById("qrcode");
         const qrCodeObj = new QRCode(qrcodeElement, {width: 256, height: 256});
         qrCodeObj.makeCode(`${id}:hello:hello`);
-        setupAttendanceCounter(id);
         document.querySelector('#start-session').addEventListener('click', () => {
             id = document.querySelector('#new-token').value.split(':')[0];
-            attendanceChannel = null;
-            setupAttendanceCounter(id);
             setInterval(() => {
                 let token = `${id}:${Date.now()}:${Math.random().toString(36).substring(7)}`;
                 qrCodeObj.makeCode(token);
